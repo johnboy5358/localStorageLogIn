@@ -3,17 +3,17 @@
   * Helper functions...
   * (could be in a library)
 */
-
+// generic helper functions.
 const qs = selectorStr => document.querySelector(selectorStr)
 const map = fn => coll => Array.prototype.map.call(coll, fn)
 const filter = fn => coll => Array.prototype.filter.call(coll, fn)
 const reduce = (fn, init) => coll => Array.prototype.reduce.call(coll, fn, init)
 const pick = prop => obj => obj[prop]
-const getUsername = pick('id')
+
 
 
 /*
-  * Onload setup localStorage and initialise Redux.store.
+  * Onload setup localStorage, initialise Redux.store and event listeners.
 */
 
 // If localStorage does not have this property then initialise.
@@ -38,10 +38,6 @@ let appStore = Redux.createStore(appReducer, {users:logInDat.users, index: users
 // Show the current table
 outpHtmlTable(qs('#output-table'), appStore.getState().users)
 
-/*
-  * End onload setup.
-*/
-
 // Display the login form
 const domLogInFormWrapper = qs('#input')
 domLogInFormWrapper.innerHTML = logInForm()
@@ -53,9 +49,17 @@ domLogInForm.addEventListener('click', reactToFormClicks(domLogInForm))
 // When the store is changed run this function
 appStore.subscribe(upDate)
 
+
 /*
-  * Functions...
+  * End onload setup.
 */
+
+
+/*
+  * App specific functions...
+*/
+
+const getUsername = pick('id')
 
 function upDate () {
   const target = qs('#output-table')
@@ -63,11 +67,7 @@ function upDate () {
 
   // Output html table.
   outpHtmlTable(target, appState)
-/*  
-  target.innerHTML = appState.users.map(v => (`
-    <tr><td>${v.id}</td><td>${v.pwd}</td></tr>
-  `)).join('')
-*/
+
   // Output to localStorage.
   const tmp = {"users": appState}
   localStorage.setItem('_jmsLogInDat', JSON.stringify(tmp))
