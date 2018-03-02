@@ -9,7 +9,6 @@ const map = fn => coll => Array.prototype.map.call(coll, fn)
 const filter = fn => coll => Array.prototype.filter.call(coll, fn)
 const reduce = (fn, init) => coll => Array.prototype.reduce.call(coll, fn, init)
 const pick = prop => obj => obj[prop]
-const lsAddress = '_lsLoginForm'
 
 
 /*
@@ -17,9 +16,9 @@ const lsAddress = '_lsLoginForm'
 */
 
 // If localStorage does not have this property then initialise.
-if (!window.localStorage.lsAddress) {
+if (!window.localStorage._lsLoginForm) {
 
-  window.localStorage.lsAddress = JSON.stringify({
+  window.localStorage._lsLoginForm = JSON.stringify({
     "users": [
       {"id": "Admin",   "pwd": "AdminPassword1"},
     ] 
@@ -29,8 +28,11 @@ if (!window.localStorage.lsAddress) {
 // make a function to get id (alias username)
 const getUsername = pick('id')
 
+// cache the output table ref.
+const outTable = qs('#output-table')
+
 // get registered users from localStorage.
-const logInDat = JSON.parse(localStorage.lsAddress)
+const logInDat = JSON.parse(localStorage._lsLoginForm)
 
 // Usernames must be unique.
 const usersIndex = new Set(map(getUsername)(logInDat.users))
@@ -39,7 +41,7 @@ const usersIndex = new Set(map(getUsername)(logInDat.users))
 let appStore = Redux.createStore(appReducer, {users:logInDat.users, index: usersIndex})
 
 // Show the current table
-outpHtmlTable(qs('#output-table'), appStore.getState().users)
+outpHtmlTable(outTable, appStore.getState().users)
 
 // Display the login form
 const domLogInFormWrapper = qs('#input')
@@ -50,7 +52,7 @@ const domLogInForm = qs('#loginForm')
 domLogInForm.addEventListener('submit', reactToFormClicks(domLogInForm))
 
 // When the store is changed run this function
-appStore.subscribe(upDate)
+appStore.subscribe(upDate(outTable, '_lsLoginForm'))
 
 
 /*
@@ -62,33 +64,42 @@ appStore.subscribe(upDate)
   * App specific functions...
 */
 
-function upDate () {
-  const target = qs('#output-table')
-  const appState = appStore.getState().users
+function upDate (table, localStAddress) {
+  console.log(localStAddress)
 
-  // Output html table.
-  outpHtmlTable(target, appState)
+  return function () {
 
-  // Output to localStorage.
-  const tmp = {"users": appState}
-  localStorage.setItem('lsAddress', JSON.stringify(tmp))
+    // get the current users
+    const appState = appStore.getState().users
+
+    // Output html table.
+    outpHtmlTable(table, appState)
+
+    // Output to localStorage.
+    const tmp = {"users": appState}
+    localStorage[localStAddress] = JSON.stringify(tmp)
+  }
+
 }
 
 function outpHtmlTable(target, source) {
+
   target.innerHTML = source.map(v => (`
     <tr><td>${v.id}</td><td>${v.pwd}</td></tr>
   `)).join('')
+
 }
 
 function reactToFormClicks(form) {
+
   return function(e) {
     e.preventDefault()
     const formValid = form.checkValidity()
 
     if(formValid) {
 
-      const formInputs = form.elements
-      const inputs = filter(v => v.dataset.input)(formInputs)
+      // const formInputs = form.elements
+      const inputs = filter(v => v.dataset.input)(form.elements)
       const inputObj = reduce((p,c) => Object.assign(p, {[c.id]: c.value}),{})(inputs)
 
       // if a form field is not completed
@@ -104,6 +115,7 @@ function reactToFormClicks(form) {
 }
 
 function appReducer(state, action) {
+
   switch (action.type) {
     case "login":
       // Usernames are unique; you can't have duplicates!
@@ -122,6 +134,7 @@ function appReducer(state, action) {
 }
 
 function logInForm(){
+
   return (`
     <form action="" id="loginForm" method="post">
       <p>
@@ -130,10 +143,13 @@ function logInForm(){
           name="username"
           data-input="user"
           type="text"
-          placeholder="enter your username"
+          pattern="[a-zA-Z0-9]{3,}"
+          placeholder="Alphanumeric only"
           required="true"
         >
+
       </p>
+
       <p>
         <label for="pwd">Password</label>
         <input id="pwd"
@@ -149,7 +165,9 @@ function logInForm(){
       <p>
         <input id="login" type="submit" name="login" value="login">
       </p>
+
       <p>password with 8 or more characters and atleast 1 uppercase letter and a number</p>
+
     </form>
   `)
 }
