@@ -9,7 +9,7 @@ const map = fn => coll => Array.prototype.map.call(coll, fn)
 const filter = fn => coll => Array.prototype.filter.call(coll, fn)
 const reduce = (fn, init) => coll => Array.prototype.reduce.call(coll, fn, init)
 const pick = prop => obj => obj[prop]
-
+const lsAddress = '_lsLoginForm'
 
 
 /*
@@ -17,9 +17,9 @@ const pick = prop => obj => obj[prop]
 */
 
 // If localStorage does not have this property then initialise.
-if (!window.localStorage._jmsLogInDat) {
+if (!window.localStorage.lsAddress) {
 
-  window.localStorage._jmsLogInDat = JSON.stringify({
+  window.localStorage.lsAddress = JSON.stringify({
     "users": [
       {"id": "Hamish",   "pwd": "Helly54321"},
     ] 
@@ -30,7 +30,7 @@ if (!window.localStorage._jmsLogInDat) {
 const getUsername = pick('id')
 
 // get registered users from localStorage.
-const logInDat = JSON.parse(localStorage._jmsLogInDat)
+const logInDat = JSON.parse(localStorage.lsAddress)
 
 // Usernames must be unique.
 const usersIndex = new Set(map(getUsername)(logInDat.users))
@@ -71,7 +71,7 @@ function upDate () {
 
   // Output to localStorage.
   const tmp = {"users": appState}
-  localStorage.setItem('_jmsLogInDat', JSON.stringify(tmp))
+  localStorage.setItem(lsAddress, JSON.stringify(tmp))
 }
 
 function outpHtmlTable(target, source) {
