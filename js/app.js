@@ -21,10 +21,13 @@ if (!window.localStorage._jmsLogInDat) {
 
   window.localStorage._jmsLogInDat = JSON.stringify({
     "users": [
-      {"id": "Hamish",   "pwd": "helly54321"},
+      {"id": "Hamish",   "pwd": "Helly54321"},
     ] 
   })
 }
+
+// make a function to get id (alias username)
+const getUsername = pick('id')
 
 // get registered users from localStorage.
 const logInDat = JSON.parse(localStorage._jmsLogInDat)
@@ -44,7 +47,7 @@ domLogInFormWrapper.innerHTML = logInForm()
 
 // Listen for form click events
 const domLogInForm = qs('#loginForm')
-domLogInForm.addEventListener('click', reactToFormClicks(domLogInForm))
+domLogInForm.addEventListener('submit', reactToFormClicks(domLogInForm))
 
 // When the store is changed run this function
 appStore.subscribe(upDate)
@@ -58,8 +61,6 @@ appStore.subscribe(upDate)
 /*
   * App specific functions...
 */
-
-const getUsername = pick('id')
 
 function upDate () {
   const target = qs('#output-table')
@@ -79,25 +80,25 @@ function outpHtmlTable(target, source) {
   `)).join('')
 }
 
-function reactToFormClicks(form, e) {
-  return function(e){
+function reactToFormClicks(form) {
+  return function(e) {
     e.preventDefault()
-    const inputs = filter(v => v.dataset.input)(form.elements)
-    const inputObj = reduce((p,c) => Object.assign(p, {[c.id]: c.value}),{})(inputs)
+    const formValid = form.checkValidity()
 
-    switch (e.target.id) {
-      case 'login':
-        console.log("You want to log in with ", inputObj)
-        // if a form field is not completed
-        if (Object.values(inputObj).some(v => !v)) break
+    if(formValid) {
 
-        appStore.dispatch({type:"login", inputs: inputObj})
-        // clear the form fields
-        form.reset()
-        break;
-      default:
-        console.log("NoOp")
-        break;
+      const formInputs = form.elements
+      const inputs = filter(v => v.dataset.input)(formInputs)
+      const inputObj = reduce((p,c) => Object.assign(p, {[c.id]: c.value}),{})(inputs)
+
+      // if a form field is not completed
+      if (Object.values(inputObj).some(v => !v)) return false
+
+      // send msg to Redux reducer.
+      appStore.dispatch({type:"login", inputs: inputObj})
+
+      // clear the form fields
+      form.reset()
     }
   }
 }
@@ -122,28 +123,33 @@ function appReducer(state, action) {
 
 function logInForm(){
   return (`
-    <form action="" id="loginForm" method="get">
+    <form action="" id="loginForm" method="post">
       <p>
         <label for="id">Username</label>
         <input id="id"
-                name="username"
-                data-input="user"
-                type="text"
-                required
-                placeholder="enter your username">
+          name="username"
+          data-input="user"
+          type="text"
+          placeholder="enter your username"
+          required="true"
+        >
       </p>
       <p>
         <label for="pwd">Password</label>
         <input id="pwd"
-                name="password"
-                data-input="pwd"
-                type="password"
-                required
-                placeholder="enter your password">
+          name="password"
+          data-input="pwd"
+          type="password"
+          pattern="(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}"
+          placeholder="enter your password"
+          required="true"
+        >
+                
       </p>
       <p>
         <input id="login" type="submit" name="login" value="login">
       </p>
+      <p>password with 8 or more characters and atleast 1 uppercase letter and a number</p>
     </form>
   `)
 }
