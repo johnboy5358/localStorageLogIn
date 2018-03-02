@@ -1,6 +1,7 @@
 html, body{
   box-sizing:border-box;
 }
+
 *, *::before, *::after{
   padding: 0;
   margin: 0;
@@ -14,8 +15,19 @@ h1{
 body{
   background: cadetblue;
   position: relative;
+}  
+
+form{
+  padding: 1rem;
 }
-  
+form p{
+  padding: .5rem 0rem;
+}
+
+#id:valid, #pwd:valid {
+  border: solid 2px green;
+}
+
 .wrapper{
   position: fixed;
   top: 0;
@@ -26,13 +38,6 @@ body{
   background: lightyellow;
   padding: 1rem;
   border-radius: 5px;
-}
-
-form{
-  padding: 1rem;
-}
-form p{
-  padding: .5rem 0rem;
 }
 
 #login{
