@@ -21,7 +21,7 @@ if (!window.localStorage.lsAddress) {
 
   window.localStorage.lsAddress = JSON.stringify({
     "users": [
-      {"id": "Hamish",   "pwd": "Helly54321"},
+      {"id": "Admin",   "pwd": "AdminPassword1"},
     ] 
   })
 }
@@ -71,7 +71,7 @@ function upDate () {
 
   // Output to localStorage.
   const tmp = {"users": appState}
-  localStorage.setItem(lsAddress, JSON.stringify(tmp))
+  localStorage.setItem('lsAddress', JSON.stringify(tmp))
 }
 
 function outpHtmlTable(target, source) {
